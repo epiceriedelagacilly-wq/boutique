@@ -33,35 +33,35 @@ async function chargerProduits() {
 
         if (!corpsTableau) return; // Sécurité si l'élément n'existe pas
 
-        for (const ligne of lignes) {
-            if (ligne.trim() === "") continue;
+      for (const ligne of lignes) {
+            const ligneNettoyée = ligne.trim();
+            if (ligneNettoyée === "") continue;
 
-            // ATTENTION : Si vos produits ne s'affichent toujours pas, 
-            // remplacez le ',' ci-dessous par ';'
-            const colonnes = ligne.split(','); 
-            const [sku, ean, nom, famille, prix_ht, tva, stock] = colonnes;
+            // On utilise le POINT-VIRGULE ici
+            const col = ligneNettoyée.split(';'); 
             
-            const urlImageFinale = await determinerImage(ean ? ean.trim() : "");
+            // On récupère les données (0, 1, 2...)
+            const ean     = col[1] ? col[1].trim() : "";
+            const nom     = col[2] ? col[2].trim() : "Produit sans nom";
+            const famille = col[3] ? col[3].trim() : "";
+            const pHT     = parseFloat(col[4]) || 0;
+            const tva     = parseFloat(col[5]) || 0;
+            const stock   = col[6] ? col[6].trim() : 0;
             
-            // Sécurité pour le calcul du prix
-            const pHT = parseFloat(prix_ht) || 0;
-            const tvaVal = parseFloat(tva) || 0;
-            const prixTTC = pHT * (1 + tvaVal);
+            const prixTTC = pHT * (1 + tva);
+            const urlImage = await determinerImage(ean);
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><img src="${urlImageFinale}" onclick="agrandirImage('${urlImageFinale}')" style="width:50px; height:50px; object-fit:cover; cursor:pointer;"></td>
-                <td>${ean || ''}</td>
-                <td><strong>${nom || 'Sans nom'}</strong><br><small>${famille || ''}</small></td>
+                <td><img src="${urlImage}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;"></td>
+                <td>${ean}</td>
+                <td><strong>${nom}</strong><br><small>${famille}</small></td>
                 <td>${prixTTC.toFixed(2)} €</td>
-                <td>${stock || 0}</td>
-                <td><input type="number" class="qte-input" min="0" max="${stock}" value="0" data-prix="${prixTTC}"></td>
+                <td>${stock}</td>
+                <td><input type="number" class="qte-input" min="0" max="${stock}" value="0"></td>
             `;
             corpsTableau.appendChild(tr);
         }
-    } catch (error) {
-        console.error("Erreur lors du chargement du CSV :", error);
-    }
 }
 
 chargerProduits();
