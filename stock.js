@@ -1,27 +1,17 @@
 async function determinerImage(ean) {
     const dossierImages = "images/";
-    const extension = ".jpg";
-    const cheminLocal = dossierImages + ean + extension;
-
+    const cheminLocal = dossierImages + ean + ".jpg";
     try {
         const testLocal = await fetch(cheminLocal, { method: 'HEAD' });
         if (testLocal.ok) return cheminLocal;
 
         const apiResp = await fetch(`https://world.openfoodfacts.org/api/v0/product/${ean}.json`);
         const apiData = await apiResp.json();
-        
-        if (apiData.status === 1 && apiData.product.image_url) {
-            return apiData.product.image_url;
-        }
+        if (apiData.status === 1 && apiData.product.image_url) return apiData.product.image_url;
     } catch (e) {
-        console.warn("Erreur image pour l'EAN : " + ean);
+        console.warn("Image non trouvée pour : " + ean);
     }
     return "images/non-disponible.jpg"; 
-}
-
-// Fonction pour éviter l'erreur au clic sur l'image
-function agrandirImage(url) {
-    window.open(url, '_blank');
 }
 
 async function chargerProduits() {
@@ -31,24 +21,28 @@ async function chargerProduits() {
         const lignes = texte.split('\n').slice(1);
         const corpsTableau = document.getElementById('corpsTableau');
 
-        if (!corpsTableau) return; // Sécurité si l'élément n'existe pas
+        if (!corpsTableau) return;
+        corpsTableau.innerHTML = "";
 
-      for (const ligne of lignes) {
-            const ligneNettoyée = ligne.trim();
-            if (ligneNettoyée === "") continue;
+        for (const ligne of lignes) {
+            const l = ligne.trim();
+            if (l === "") continue;
 
-            // On utilise le POINT-VIRGULE ici
-            const col = ligneNettoyée.split(';'); 
+            const col = l.split(';'); 
             
-            // On récupère les données (0, 1, 2...)
             const ean     = col[1] ? col[1].trim() : "";
-            const nom     = col[2] ? col[2].trim() : "Produit sans nom";
+            const nom     = col[2] ? col[2].trim() : "Produit";
             const famille = col[3] ? col[3].trim() : "";
-            const pHT     = parseFloat(col[4]) || 0;
-            const tva     = parseFloat(col[5]) || 0;
+            
+            // Sécurité : on remplace la virgule par un point avant de transformer en nombre
+            const pHT     = parseFloat(col[4].toString().replace(',', '.')) || 0;
+            const tvaValeur = parseFloat(col[5].toString().replace(',', '.')) || 0;
             const stock   = col[6] ? col[6].trim() : 0;
             
-            const prixTTC = pHT * (1 + tva);
+            // Calcul TTC (gère si la TVA est 0.20 ou 20)
+            const tauxTVA = tvaValeur > 1 ? tvaValeur / 100 : tvaValeur;
+            const prixTTC = pHT * (1 + tauxTVA);
+
             const urlImage = await determinerImage(ean);
 
             const tr = document.createElement('tr');
@@ -62,6 +56,9 @@ async function chargerProduits() {
             `;
             corpsTableau.appendChild(tr);
         }
-}
+    } catch (e) {
+        console.error("Erreur de chargement :", e);
+    }
+} // <--- L'accolade qui manquait ici !
 
 chargerProduits();
