@@ -1,59 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Boutique de Gestion</title>
-    <style>
-        body { font-family: sans-serif; margin: 20px; color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f4f4f4; }
-        tr:hover { background-color: #f9f9f9; }
-        img { border-radius: 4px; border: 1px solid #eee; }
-        .panier-fixe { position: sticky; bottom: 0; background: white; padding: 20px; border-top: 3px solid #007bff; box-shadow: 0 -5px 10px rgba(0,0,0,0.1); }
-        input[type="number"] { width: 60px; padding: 5px; }
-    </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Test Clic & Collect — Prototype</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;max-width:980px;margin:18px auto;padding:12px}
+  h1{font-size:20px;margin-bottom:6px}
+  fieldset{margin-bottom:12px;padding:10px}
+  label{display:block;margin:6px 0}
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  th,td{border:1px solid #ddd;padding:8px;text-align:left}
+  input[type="number"]{width:72px}
+  .btn{background:#1976d2;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  #panier{margin-top:10px;padding:10px;border:1px solid #ccc;background:#fafafa}
+  .small{font-size:90%;color:#555}
+  .out{color:#b00;font-weight:bold}
+  pre{white-space:pre-wrap}
+</style>
 </head>
 <body>
+<h1>Commande Clic & Collect — Prototype</h1>
+<p class="small">Horaires retrait : 12:00–14:00 / 17:00–19:00. Ce formulaire est un prototype : remplace l'email du magasin dans la variable <code>shopEmail</code>.</p>
 
-    <h1>Catalogue Produits</h1>
+<form id="orderForm" onsubmit="return submitOrder(event)">
+  <fieldset>
+    <legend>Coordonnées client</legend>
+    <label>Nom complet *<br><input type="text" id="clientName" required></label>
+    <label>Téléphone *<br><input type="tel" id="clientPhone" required></label>
+    <label>Email (optionnel)<br><input type="email" id="clientEmail"></label>
+  </fieldset>
 
-    <div id="bloc-recherche">
-        <input type="text" id="inputRecherche" placeholder="Scannez un EAN ou cherchez un nom..." 
-               style="width: 100%; padding: 12px; font-size: 16px; border: 2px solid #007bff; border-radius: 5px;">
-    </div>
+  <fieldset>
+    <legend>Choix des produits</legend>
+    <p class="small">Indiquez la quantité souhaitée (0 = ne pas ajouter). Le formulaire vérifie le stock disponible.</p>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Photo</th>
-                <th>EAN</th>
-                <th>Article</th>
-                <th>Prix TTC</th>
-                <th>Stock</th>
-                <th>Quantité</th>
-            </tr>
-        </thead>
-        <tbody id="corpsTableau">
-            </tbody>
+    <table id="prodTable" aria-describedby="prodDesc">
+      <thead>
+        <tr><th>Réf</th><th>Produit</th><th>Type</th><th>Famille</th><th>Prix TTC</th><th>Stock</th><th>Qté</th></tr>
+      </thead>
+      <tbody></tbody>
     </table>
+  </fieldset>
 
-    <div class="panier-fixe">
-        <h2>Total Commande : <span id="montant-total">0.00</span> €</h2>
-        <button id="bouton-payer" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px;">
-            Valider la commande
-        </button>
-    </div>
+  <fieldset>
+    <legend>Détails retrait & paiement</legend>
+    <label>Plage retrait *<br>
+      <select id="timeSlot" required>
+        <option value="">-- choisir --</option>
+        <option>12:00 - 12:30</option>
+        <option>12:30 - 13:00</option>
+        <option>13:00 - 13:30</option>
+        <option>17:00 - 17:30</option>
+        <option>17:30 - 18:00</option>
+        <option>18:00 - 18:30</option>
+      </select>
+    </label>
+    <label>Méthode paiement<br>
+      <select id="paymentMethod">
+        <option>Au retrait (espèces / carte)</option>
+        <option>Prépaiement par téléphone</option>
+      </select>
+    </label>
+  </fieldset>
 
-    <div id="modal-image" onclick="fermerImage()" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); cursor:zoom-out;">
-        <img id="image-agrandie" style="margin:auto; display:block; max-width:90%; max-height:90%; margin-top:5vh; border: 3px solid white;">
-    </div>
+  <div id="panier">
+    <strong>Panier</strong>
+    <pre id="cartContents" style="margin:8px 0">Aucun produit sélectionné</pre>
+    <div><strong>Total TTC : €<span id="total">0.00</span></strong></div>
+  </div>
 
-    <script src="visionneuse.js"></script>
-    <script src="stock.js"></script>
-    <script src="panier.js"></script>
-    <script src="recherche.js"></script>
+  <div style="margin-top:10px">
+    <button type="submit" class="btn" id="sendBtn">Envoyer la commande (ouvrir messagerie)</button>
+    <button type="button" class="btn" onclick="printSummary()" style="margin-left:6px">Imprimer récapitulatif</button>
+  </div>
+</form>
 
+<script>
+/* === CONFIGURATION : remplace l'email par celui de ton magasin === */
+const shopEmail = "epiceriedelagacilly@gmail.com"; // <--- REMPLACE ICI
+
+/* === PRODUITS (d'après ton tableau rectifié) ===
+   Assure-toi que les prix sont des nombres (pas de guillemets) et utilisent un point décimal.
+*/
+const products = [
+  { sku: "PANZ_SPAG1K", type: "PATES ALIMENTAIRES", famille: "Épicerie 5,5%", nom: "PÂTES SPAGHETTI PANZANI 1KG", description: "Spaghetti 100% semoule de blé dur", prix: 2.99, unite: "kg", stock: "9", code_barre: "3038350025005" },
+  { sku: "BF_PT12", type: "PAPIER HYGIENIQUE", famille: "DPH 20%", nom: "12 ROULEAUX PAPIER TOILETTE BF", description: "Pack 12 rouleaux ouate 2 plis", prix: 3.75, unite: "pack", stock: "4", code_barre: "3258561668031" },
+  { sku: "CN_CAFE250", type: "CAFES . CHICOREES", famille: "EPICERIE 5.5%", nom: "CARTE NOIRE MOULU 250 G", description: "Café 100% Arabica 250 g", prix: 7.95, unite: "paquet", stock: "12", code_barre: "8000070200289" },
+  { sku: "BF_LESS125", type: "LESSIVE", famille: "DPH 20%", nom: "1,25L LESSIV.LIQUID.MARSEI.B.F", description: "Concentrée savon de Marseille 27 lavages", prix: 3.99, unite: "litre", stock: 6, code_barre: "3258561500256" },
+  { sku: "GDS_CHOC62SES", type: "CHOCOLATS EN TABLETTES", famille: "Épicerie 5,5%", nom: "100G CHOC/NOIR/NOIS BIO G.SAIL", description: "Chocolat noir bio 62% avec sésame torréfié", prix: 4.95, unite: "tablette", stock: "15", code_barre: "3760226260493" }
+];
+
+/* === Remplissage du tableau produits === */
+function initProducts(){
+  const tbody = document.querySelector("#prodTable tbody");
+  products.forEach((p,i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.sku}</td>
+      <td title="${escapeHtml(p.description)}">${escapeHtml(p.nom)}</td>
+      <td>${escapeHtml(p.type)}</td>
+      <td>${escapeHtml(p.famille)}</td>
+      <td>€ ${Number(p.prix).toFixed(2)}</td>
+      <td id="stock-${i}">${p.stock}</td>
+      <td><input type="number" min="0" value="0" data-index="${i}" onchange="updateCart()" /></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+function escapeHtml(text){ return text ? text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ""; }
+
+/* === Mise à jour du panier et contrôle du stock === */
+function updateCart(){
+  const inputs = document.querySelectorAll('#prodTable input[type="number"]');
+  let total = 0;
+  const lines = [];
+  let stockProblem = false;
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.index,10);
+    const qty = Math.max(0, parseInt(inp.value) || 0);
+    const p = products[idx];
+    if(qty > p.stock){
+      document.getElementById(`stock-${idx}`).innerHTML = `<span class="out">${p.stock} (max)</span>`;
+      stockProblem = true;
+    } else {
+      document.getElementById(`stock-${idx}`).textContent = p.stock;
+    }
+    if(qty>0){
+      const lineTotal = qty * Number(p.prix);
+      total += lineTotal;
+      lines.push(`${p.sku} | ${p.nom} | qté: ${qty} | €${lineTotal.toFixed(2)}`);
+    }
+  });
+  document.getElementById("cartContents").textContent = lines.length ? lines.join("\n") : "Aucun produit sélectionné";
+  document.getElementById("total").textContent = total.toFixed(2);
+  document.getElementById("sendBtn").disabled = stockProblem || total <= 0;
+}
+
+/* === Génération du texte commande (corps mail + fichier txt) === */
+function buildOrderText(){
+  const name = document.getElementById("clientName").value.trim();
+  const phone = document.getElementById("clientPhone").value.trim();
+  const email = document.getElementById("clientEmail").value.trim();
+  const slot = document.getElementById("timeSlot").value;
+  const payment = document.getElementById("paymentMethod").value;
+  const total = document.getElementById("total").textContent;
+  const cart = document.getElementById("cartContents").textContent;
+  const now = new Date().toISOString().slice(0,19).replace('T',' ');
+
+  return (
+`Commande Clic & Collect
+Magasin: [Ton magasin]
+Date/Heure commande: ${now}
+
+Client:
+  Nom: ${name}
+  Téléphone: ${phone}
+  Email: ${email}
+
+Plage retrait: ${slot}
+Paiement: ${payment}
+
+Produits:
+${cart}
+
+Total TTC: €${total}
+
+-- Fin de commande`
+  );
+}
+
+/* === Soumission du formulaire (version robuste avec fallback) === */
+function submitOrder(e){
+  e.preventDefault();
+  updateCart();
+  const cartText = document.getElementById("cartContents").textContent;
+  if(cartText === "Aucun produit sélectionné"){
+    alert("Votre panier est vide. Ajoutez au moins 1 produit.");
+    return false;
+  }
+  if(!document.getElementById("clientName").value.trim() || !document.getElementById("clientPhone").value.trim()){
+    alert("Merci d'indiquer votre nom et téléphone.");
+    return false;
+  }
+
+  const bodyText = buildOrderText();
+
+  // Prépare mailto correctement encodé (recipient non encodé pour compatibilité)
+  const subject = `Commande Clic&Collect - ${document.getElementById("clientName").value.trim()}`;
+  const mailtoBase = `mailto:${shopEmail}`;
+  const params = `subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+  const mailtoUrl = `${mailtoBase}?${params}`;
+
+  console.log("mailto généré :", mailtoUrl);
+
+  // Méthode 1 : créer un lien <a> et le cliquer (très compatible)
+  try {
+    const a = document.createElement('a');
+    a.href = mailtoUrl;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch(err) {
+    console.warn("Impossible d'utiliser click() sur <a> :", err);
+    try {
+      // Fallback 2 : window.open (peut être bloqué par le navigateur)
+      const w = window.open(mailtoUrl, '_blank');
+      if(!w){
+        console.warn("window.open(mailto) bloqué par le navigateur");
+        alert("Votre navigateur a bloqué l'ouverture automatique du client mail. Un fichier de sauvegarde a été téléchargé — merci de l'envoyer manuellement à " + shopEmail);
+      }
+    } catch(err2) {
+      console.error("Fallback window.open error:", err2);
+      alert("Impossible d'ouvrir le client mail automatiquement. Téléchargement du fichier de sauvegarde en cours.");
+    }
+  }
+
+  // Toujours : télécharger un fichier .txt de sauvegarde
+  try {
+    const blob = new Blob([bodyText], {type: "text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const safeName = document.getElementById("clientName").value.trim().replace(/\s+/g,'_') || "commande";
+    link.download = `commande_${safeName}_${Date.now()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch(saveErr) {
+    console.error("Erreur lors du téléchargement de sauvegarde :", saveErr);
+  }
+
+  // Décrémente le stock local pour le prototype
+  const inputs = document.querySelectorAll('#prodTable input[type="number"]');
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.index,10);
+    const qty = Math.max(0, parseInt(inp.value) || 0);
+    if(qty>0){
+      products[idx].stock = Math.max(0, products[idx].stock - qty);
+      inp.value = 0;
+    }
+  });
+  updateCart();
+
+  alert("Commande préparée : un e-mail va être créé dans votre client mail (si configuré). Un fichier de sauvegarde a aussi été téléchargé automatiquement.");
+  return false;
+}
+
+/* === Impression du récapitulatif dans une nouvelle fenêtre === */
+function printSummary(){
+  updateCart();
+  const bodyText = buildOrderText();
+  const w = window.open("", "_blank");
+  if(!w) { alert("Popup bloquée : autorise l'ouverture d'une nouvelle fenêtre pour imprimer."); return; }
+  w.document.write("<pre style='font-family:Arial,Helvetica,sans-serif;white-space:pre-wrap'>" + escapeHtml(bodyText) + "</pre>");
+  w.document.title = "Récapitulatif commande";
+  w.focus();
+  w.print();
+}
+
+/* === Init === */
+initProducts();
+updateCart();
+</script>
 </body>
 </html>
