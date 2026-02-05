@@ -36,11 +36,11 @@
     <legend>Choix des produits</legend>
     <p class="small">Indiquez la quantité souhaitée (0 = ne pas ajouter). Le formulaire vérifie le stock disponible.</p>
 
- <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2196f3;">
-  <label style="font-weight: bold; color: #1976d2;">🚀 SCANNEZ UN PRODUIT ICI :</label>
-  <input type="text" id="barcodeScanner" placeholder="Cliquez ici puis scannez..." 
-         style="width: 100%; padding: 10px; font-size: 18px; border: 2px solid #1976d2; border-radius: 4px;">
-  <p class="small">Le produit sera automatiquement ajouté au panier après le scan.</p>
+<div style="background: #f1f8e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #4caf50;">
+    <label style="font-weight: bold; color: #2e7d32;">🔍 RECHERCHER UN PRODUIT :</label>
+    <input type="text" id="searchInput" placeholder="Tapez le nom du produit (ex: pâtes, café...)" 
+           style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #4caf50; border-radius: 4px; box-sizing: border-box;">
+    <p class="small">Le tableau se met à jour automatiquement pendant que vous tapez.</p>
 </div>
     
 
@@ -86,6 +86,12 @@
 </form>
 
 <script>
+<div style="background: #f1f8e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #4caf50;">
+    <label style="font-weight: bold; color: #2e7d32;">🔍 RECHERCHER UN PRODUIT :</label>
+    <input type="text" id="searchInput" placeholder="Tapez le nom du produit (ex: pâtes, café...)" 
+           style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #4caf50; border-radius: 4px; box-sizing: border-box;">
+    <p class="small">Le tableau se met à jour automatiquement pendant que vous tapez.</p>
+</div>
 /* === CONFIGURATION : remplace l'email par celui de ton magasin === */
 const shopEmail = "epiceriedelagacilly@gmail.com"; // <--- REMPLACE ICI
 
