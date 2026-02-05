@@ -36,6 +36,14 @@
     <legend>Choix des produits</legend>
     <p class="small">Indiquez la quantité souhaitée (0 = ne pas ajouter). Le formulaire vérifie le stock disponible.</p>
 
+ <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2196f3;">
+  <label style="font-weight: bold; color: #1976d2;">🚀 SCANNEZ UN PRODUIT ICI :</label>
+  <input type="text" id="barcodeScanner" placeholder="Cliquez ici puis scannez..." 
+         style="width: 100%; padding: 10px; font-size: 18px; border: 2px solid #1976d2; border-radius: 4px;">
+  <p class="small">Le produit sera automatiquement ajouté au panier après le scan.</p>
+</div>
+    
+
     <table id="prodTable" aria-describedby="prodDesc">
       <thead>
         <tr><th>Réf</th><th>Produit</th><th>Type</th><th>Famille</th><th>Prix TTC</th><th>Stock</th><th>Qté</th></tr>
