@@ -4,7 +4,6 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>Clic & Collect - Épicerie de la Gacilly</title>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +15,7 @@
         <input type="text" id="searchInput" placeholder="Tapez le nom du produit (ex: pâtes, café...)">
     </div>
 
-    <form id="orderForm" onsubmit="return submitOrder(event)">
+    <form id="orderForm">
         <fieldset style="border:none; padding:0;">
             <label><strong>Nom complet *</strong><br>
                 <input type="text" id="clientName" required style="width:100%; padding:8px; margin-bottom:15px;">
@@ -32,19 +31,30 @@
                     <th>Quantité</th>
                 </tr>
             </thead>
-            <tbody>
-                </tbody>
+            <tbody></tbody>
         </table>
 
         <div id="panier">
             <strong>Votre Panier :</strong>
             <pre id="cartContents">Aucun produit sélectionné</pre>
             <p><strong>Total à régler : <span id="total">0.00</span> €</strong></p>
-            <button type="submit" class="btn" id="sendBtn" disabled>Envoyer la commande par e-mail</button>
+            <button type="button" class="btn" id="sendBtn" disabled onclick="submitOrder()">Envoyer la commande par e-mail</button>
         </div>
     </form>
 
+    <!-- Formulaire caché FormSubmit -->
+    <form id="formsubmitForm" action="https://formsubmit.co/epiceriedelagacilly@gmail.com" method="POST" style="display:none;">
+        <input type="hidden" name="_subject" value="🛒 Nouvelle commande Clic & Collect">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" value="merci.html">
+        <input type="hidden" name="Nom" id="hiddenNom">
+        <input type="hidden" name="Panier" id="hiddenPanier">
+        <input type="hidden" name="Total" id="hiddenTotal">
+    </form>
+
     <script src="stock.js"></script>
+    <script src="recherche.js"></script>
+    <script src="visionneuse.js"></script>
 
 </body>
 </html>
