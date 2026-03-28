@@ -3,58 +3,12 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Clic & Collect - Épicerie de la Gacilly</title>
+    <title>Commande envoyée - Épicerie de la Gacilly</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-    <h1>🛒 Commande Clic & Collect</h1>
-
-    <div class="search-box">
-        <label><strong>🔍 Rechercher un produit :</strong></label>
-        <input type="text" id="searchInput" placeholder="Tapez le nom du produit (ex: pâtes, café...)">
-    </div>
-
-    <form id="orderForm">
-        <fieldset style="border:none; padding:0;">
-            <label><strong>Nom complet *</strong><br>
-                <input type="text" id="clientName" required style="width:100%; padding:8px; margin-bottom:15px;">
-            </label>
-        </fieldset>
-
-        <table id="prodTable">
-            <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Prix TTC</th>
-                    <th>Stock</th>
-                    <th>Quantité</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <div id="panier">
-            <strong>Votre Panier :</strong>
-            <pre id="cartContents">Aucun produit sélectionné</pre>
-            <p><strong>Total à régler : <span id="total">0.00</span> €</strong></p>
-            <button type="button" class="btn" id="sendBtn" disabled onclick="submitOrder()">Envoyer la commande par e-mail</button>
-        </div>
-    </form>
-
-    <!-- Formulaire caché FormSubmit -->
-    <form id="formsubmitForm" action="https://formsubmit.co/epiceriedelagacilly@gmail.com" method="POST" style="display:none;">
-        <input type="hidden" name="_subject" value="🛒 Nouvelle commande Clic & Collect">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_next" value="merci.html">
-        <input type="hidden" name="Nom" id="hiddenNom">
-        <input type="hidden" name="Panier" id="hiddenPanier">
-        <input type="hidden" name="Total" id="hiddenTotal">
-    </form>
-
-    <script src="stock.js"></script>
-    <script src="recherche.js"></script>
-    <script src="visionneuse.js"></script>
-
+<body style="text-align:center; padding-top:60px;">
+    <h1>✅ Commande envoyée !</h1>
+    <p style="font-size:18px;">Merci ! Nous avons bien reçu votre commande.<br>Nous vous contacterons pour confirmer le créneau de retrait.</p>
+    <a href="index.html" style="display:inline-block; margin-top:30px; padding:15px 30px; background:#1976d2; color:white; border-radius:8px; text-decoration:none; font-weight:bold;">← Retour à la boutique</a>
 </body>
 </html>
