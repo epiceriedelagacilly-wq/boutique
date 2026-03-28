@@ -1,6 +1,131 @@
-Code EAN,Nom de l’article,Type,Famille,Prix HT,TVA,TTC,stock,Nature,Usage,Moment,Image
-3250391584123,Jambon Superieur,Frais,,3.50,0.055,,10,,,,images/3250391584123.jpg
-5449000000996,Coca Cola 1.5L,Boisson,,1.20,0.20,,24,,,,images/5449000000996.jpg
-3560070494321,Plat Lasagnes,Traiteur,,5.90,0.10,,5,,,,images/3560070494321.jpg
-3250391584123,Jambon,Frais,,3.50,0.055,,10,,,,images/3250391584123.jpg
-9002490255176,25CL RED BULL GREEN ED.FR.DRAG,Boisson Energisante ,"Liquide 5,5","1,14","0,055",2,8,Boisson énergisante gazeuse ,Énergie et Concentration ,"Sport, Travail, Route, Soirée ",Images/9002490255176.jpg
+/* ===========================================
+   stock.js – Clic & Collect
+   Charge les produits depuis produits.csv
+=========================================== */
+
+const fallbackImage = "https://via.placeholder.com/50x50?text=?";
+
+/* Normalise le texte : minuscules + sans accents */
+function normaliser(str) {
+  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/* Charge et parse le CSV */
+async function chargerProduits() {
+  const response = await fetch("produits.csv");
+  const text = await response.text();
+  const lignes = text.trim().split("\n");
+  const headers = lignes[0].split(",");
+
+  const produits = [];
+  for (let i = 1; i < lignes.length; i++) {
+    // Gère les virgules dans les champs entre guillemets
+    const cols = lignes[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+    const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
+
+    const ean       = clean[0] || "";
+    const nom       = clean[1] || "";
+    const type      = clean[2] || "";
+    const famille   = clean[3] || "";
+    const prixHT    = parseFloat(clean[4]) || 0;
+    const tva       = parseFloat(clean[5]) || 0;
+    const ttc       = parseFloat(clean[6]) || (prixHT * (1 + tva));
+    const stock     = parseInt(clean[7]) || 0;
+    const image     = clean[11] || "";
+
+    if (nom) {
+      produits.push({ ean, nom, type, famille, prix: ttc, stock, image,
+        recherche: normaliser(`${nom} ${type} ${famille}`) });
+    }
+  }
+  return produits;
+}
+
+let products = [];
+
+/* Initialise le tableau */
+async function initProducts() {
+  products = await chargerProduits();
+  afficherProduits(products);
+}
+
+function afficherProduits(liste) {
+  const tbody = document.querySelector("#prodTable tbody");
+  tbody.innerHTML = "";
+  liste.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <img src="${p.image}" alt="${p.nom}" width="50"
+             onerror="this.onerror=null; this.src='${fallbackImage}';">
+        ${p.nom}
+        ${p.famille ? `<br><small class="small">${p.famille}</small>` : ""}
+      </td>
+      <td>€${p.prix.toFixed(2)}</td>
+      <td id="stock-${i}">${p.stock}</td>
+      <td><input type="number" min="0" value="0" data-index="${i}" onchange="updateCart()" /></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateCart();
+}
+
+/* Recherche avec tolérance aux accents */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("searchInput").addEventListener("input", function() {
+    const terme = normaliser(this.value);
+    const filtres = products.filter(p => p.recherche.includes(terme));
+    afficherProduits(filtres);
+  });
+});
+
+/* Mise à jour du panier */
+function updateCart() {
+  const inputs = document.querySelectorAll('#prodTable input[type="number"]');
+  let total = 0;
+  const lines = [];
+  let stockProblem = false;
+
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.index, 10);
+    const qty = Math.max(0, parseInt(inp.value) || 0);
+    const p = products[idx];
+    if (!p) return;
+
+    if (qty > p.stock) {
+      document.getElementById(`stock-${idx}`).innerHTML = `<span class="out">${p.stock} (max)</span>`;
+      stockProblem = true;
+    } else {
+      document.getElementById(`stock-${idx}`).textContent = p.stock;
+    }
+
+    if (qty > 0) {
+      const lineTotal = qty * p.prix;
+      total += lineTotal;
+      lines.push(`${p.ean} | ${p.nom} | qté: ${qty} | €${lineTotal.toFixed(2)}`);
+    }
+  });
+
+  document.getElementById("cartContents").textContent = lines.length ? lines.join("\n") : "Aucun produit sélectionné";
+  document.getElementById("total").textContent = total.toFixed(2);
+  document.getElementById("sendBtn").disabled = stockProblem || total <= 0;
+}
+
+/* Soumission via FormSubmit */
+function submitOrder() {
+  updateCart();
+  const clientName = document.getElementById("clientName").value.trim();
+  const total = parseFloat(document.getElementById("total").textContent);
+  const panier = document.getElementById("cartContents").textContent;
+
+  if (!clientName) { alert("Veuillez entrer votre nom complet."); return; }
+  if (total <= 0) { alert("Votre panier est vide !"); return; }
+
+  document.getElementById("hiddenNom").value = clientName;
+  document.getElementById("hiddenPanier").value = panier;
+  document.getElementById("hiddenTotal").value = total.toFixed(2) + " €";
+  document.getElementById("formsubmitForm").submit();
+}
+
+/* Lancement */
+initProducts();
