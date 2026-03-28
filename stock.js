@@ -4,14 +4,9 @@
 =========================================== */
 
 /* === CONFIGURATION === */
-const fallbackImage = "https://site-specialise.com/images/default.jpg"; // fallback global si image locale non trouvée
+const fallbackImage = "https://site-specialise.com/images/default.jpg";
 
-/* === PRODUITS EXEMPLE ===
-   - code_barre = EAN
-   - prix = nombre
-   - stock = nombre
-   Tu peux ajouter autant de produits que nécessaire.
-*/
+/* === PRODUITS === */
 const products = [
   { sku: "PANZ_SPAG1K", nom: "PÂTES SPAGHETTI PANZANI 1KG", prix: 2.99, stock: 9, code_barre: "3038350025005" },
   { sku: "CN_CAFE250", nom: "CARTE NOIRE MOULU 250 G", prix: 7.95, stock: 12, code_barre: "8000070200289" },
@@ -20,8 +15,7 @@ const products = [
 
 /* === FONCTION POUR OBTENIR LE CHEMIN IMAGE === */
 function getImage(p) {
-  const localPath = `images/${p.code_barre}.jpg`;  // chemin local (tests)
-  return localPath; // fallback géré dans onerror
+  return `images/${p.code_barre}.jpg`;
 }
 
 /* === INITIALISATION DU TABLEAU PRODUITS === */
@@ -74,25 +68,29 @@ function updateCart() {
   document.getElementById("sendBtn").disabled = stockProblem || total <= 0;
 }
 
-/* === GÉNÉRATION D'UN CHAMP CACHÉ POUR FORM SUBMIT === */
-document.getElementById("orderForm").addEventListener("submit", function(e){
+/* === SOUMISSION VIA FORMSUBMIT === */
+function submitOrder() {
   updateCart();
-  if(document.getElementById("total").textContent <= 0){
-    e.preventDefault();
+
+  const clientName = document.getElementById("clientName").value.trim();
+  const total = parseFloat(document.getElementById("total").textContent);
+  const panier = document.getElementById("cartContents").textContent;
+
+  if (!clientName) {
+    alert("Veuillez entrer votre nom complet.");
+    return;
+  }
+  if (total <= 0) {
     alert("Votre panier est vide !");
-    return false;
+    return;
   }
 
-  // Crée ou met à jour le champ caché pour envoyer le panier
-  let cartField = document.querySelector('input[name="Panier"]');
-  if(!cartField){
-    cartField = document.createElement("input");
-    cartField.type = "hidden";
-    cartField.name = "Panier";
-    this.appendChild(cartField);
-  }
-  cartField.value = document.getElementById("cartContents").textContent;
-});
+  document.getElementById("hiddenNom").value = clientName;
+  document.getElementById("hiddenPanier").value = panier;
+  document.getElementById("hiddenTotal").value = total.toFixed(2) + " €";
+
+  document.getElementById("formsubmitForm").submit();
+}
 
 /* === INITIALISATION === */
 initProducts();
